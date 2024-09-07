@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ base_url }}/css/lightgallery.min.css">
+{% endblock %}
+
+{% block libs %}
+    {{ super() }}
+    <script src="{{ base_url }}/js/lightgallery.min.js"></script>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        document.querySelectorAll(".lightgallery").forEach(function(el) {
+            lightGallery(el);
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% if page.url_to_pdf %}
+        <a href="{{ page.url_to_pdf }}" class="md-content__button md-icon">
+            {% include ".icons/material/file-pdf-box.svg" %}
+        </a>
+    {% endif %}
+    {{ super() }}
+{% endblock %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{{ 'assets/stylesheets/custom.2fa34c39.min.css' | url }}">
+{% endblock %}
