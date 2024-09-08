@@ -362,3 +362,227 @@ paths:
                       description: Техническое состояние робота
         '500':
           description: Внутренняя ошибка
+  /robots/status:
+    get:
+      summary: Получить статус роботов
+      description: Возвращает текущее состояние всех роботов на кухне, включая их доступность и состояние.
+      operationId: getRobotStatus
+      tags:
+        - Robots
+      responses:
+        '200':
+          description: Статус роботов успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    robotId:
+                      type: string
+                      format: uuid
+                      description: Уникальный идентификатор робота
+                    status:
+                      type: string
+                      enum: [active, inactive, maintenance]
+                      description: Текущее состояние робота
+                    task:
+                      type: string
+                      description: Текущая задача робота, если есть
+                    lastMaintenance:
+                      type: string
+                      format: date-time
+                      description: Дата последнего технического обслуживания
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /robots/{robotId}/activate:
+    post:
+      summary: Активация робота
+      description: Активация конкретного робота для выполнения задач на кухне.
+      operationId: activateRobot
+      tags:
+        - Robots
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор робота
+      responses:
+        '200':
+          description: Робот успешно активирован
+        '400':
+          description: Некорректный запрос
+        '404':
+          description: Робот не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /robots/{robotId}/deactivate:
+    post:
+      summary: Деактивация робота
+      description: Остановка робота и перевод его в неактивное состояние.
+      operationId: deactivateRobot
+      tags:
+        - Robots
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор робота
+      responses:
+        '200':
+          description: Робот успешно деактивирован
+        '400':
+          description: Некорректный запрос
+        '404':
+          description: Робот не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /recipes:
+    get:
+      summary: Получить список технологических карт (рецептов)
+      description: Возвращает список всех технологических карт с информацией о рецептах и ингредиентах.
+      operationId: getRecipes
+      tags:
+        - Recipes
+      responses:
+        '200':
+          description: Список рецептов успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    recipeId:
+                      type: string
+                      format: uuid
+                      description: Уникальный идентификатор рецепта
+                    name:
+                      type: string
+                      description: Название рецепта
+                    description:
+                      type: string
+                      description: Описание рецепта
+                    ingredients:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          ingredientId:
+                            type: string
+                            format: uuid
+                            description: Уникальный идентификатор ингредиента
+                          name:
+                            type: string
+                            description: Название ингредиента
+                          quantity:
+                            type: number
+                            description: Количество ингредиента
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /recipes/{recipeId}:
+    get:
+      summary: Получить подробную информацию о рецепте
+      description: Возвращает информацию о конкретной технологической карте, включая ингредиенты и шаги приготовления.
+      operationId: getRecipeDetails
+      tags:
+        - Recipes
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор рецепта
+      responses:
+        '200':
+          description: Информация о рецепте успешно получена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recipeId:
+                    type: string
+                    format: uuid
+                    description: Уникальный идентификатор рецепта
+                  name:
+                    type: string
+                    description: Название рецепта
+                  description:
+                    type: string
+                    description: Описание рецепта
+                  steps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        stepNumber:
+                          type: integer
+                          description: Номер шага
+                        instruction:
+                          type: string
+                          description: Инструкция для данного шага
+                  ingredients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ingredientId:
+                          type: string
+                          format: uuid
+                          description: Уникальный идентификатор ингредиента
+                        name:
+                          type: string
+                          description: Название ингредиента
+                        quantity:
+                          type: number
+                          description: Количество ингредиента
+        '404':
+          description: Рецепт не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /robots/assignTask:
+    post:
+      summary: Назначить задачу роботу
+      description: Назначает задачу конкретному роботу на кухне, например, приготовление блюда или помощь в логистике.
+      operationId: assignTaskToRobot
+      tags:
+        - Robots
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                robotId:
+                  type: string
+                  format: uuid
+                  description: Уникальный идентификатор робота
+                task:
+                  type: string
+                  description: Назначенная задача робота
+      responses:
+        '200':
+          description: Задача успешно назначена роботу
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Робот не найден
+        '500':
+          description: Внутренняя ошибка сервера
