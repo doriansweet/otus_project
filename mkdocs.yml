@@ -85,11 +85,15 @@ plugins:
 nav:
   - Основная информация:
     - index.md
-    - bpmn.md
-    - use_case.md
+    - requirements.md
     - user_story.md
+    - use_case.md
+    - bpmn.md
   - Техническая документация:
     - api.md
     - db.md
     - c4.md
     - sequence.md
+  - Задачи:
+    - tasks.md
+    - test_case.md

@@ -1,0 +1,47 @@
+# Byte-compiled Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment folder
+venv/
+.env/
+
+# MkDocs output folder (if any)
+site/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Test output
+.tox/
+.nox/
+
+# PyInstaller output
+/dist/
+/build/
+/*.spec
+
+# Temporary files
+*.tmp
+*.swp
+
+# MacOS specific files
+.DS_Store
+
+# IDE files (e.g., for VSCode, PyCharm, etc.)
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+.history
+
+# MkDocs build cache
+/mkdocs/.cache/

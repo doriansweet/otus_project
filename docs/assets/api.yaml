@@ -2,11 +2,27 @@ openapi: 3.0.0
 info:
   title: Restaurant API
   version: 1.0.0
-  description: API для работы с заказами в ресторане и программой лояльности
+  description: API для работы с заказами в ресторане, программой лояльности, технологическими картами и роботами
+
+tags:
+  - name: Menu
+    description: Операции с меню ресторана
+  - name: Cart
+    description: Операции с корзиной
+  - name: Orders
+    description: Операции с заказами
+  - name: Loyalty
+    description: Операции с программой лояльности
+  - name: Robots
+    description: Операции с роботами
+  - name: Recipes
+    description: Операции с технологическими картами
 
 paths:
   /menu:
     get:
+      tags:
+        - Menu
       summary: Получить меню ресторана
       operationId: getMenu
       responses:
@@ -36,36 +52,10 @@ paths:
         '500':
           description: Внутренняя ошибка сервера
 
-  /orders:
-    post:
-      summary: Добавить блюдо в корзину
-      operationId: addDishToCart
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dishId:
-                  type: string
-                  format: uuid
-                  description: Уникальный идентификатор блюда
-                quantity:
-                  type: integer
-                  description: Количество порций
-      responses:
-        '201':
-          description: Блюдо успешно добавлено в корзину
-        '400':
-          description: Некорректные данные
-        '404':
-          description: Блюдо не найдено
-        '500':
-          description: Внутренняя ошибка сервера
-
   /cart:
     get:
+      tags:
+        - Cart
       summary: Просмотреть корзину
       operationId: getCart
       responses:
@@ -104,6 +94,8 @@ paths:
 
   /cart/{dishId}:
     delete:
+      tags:
+        - Cart
       summary: Удалить блюдо из корзины
       operationId: removeDishFromCart
       parameters:
@@ -122,9 +114,109 @@ paths:
         '500':
           description: Внутренняя ошибка сервера
 
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Создать новый заказ
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      dishId:
+                        type: string
+                        format: uuid
+                        description: Уникальный идентификатор блюда
+                      quantity:
+                        type: integer
+                        description: Количество порций
+                paymentMethod:
+                  type: string
+                  enum: [card, cash]
+                  description: Способ оплаты
+                pickupMethod:
+                  type: string
+                  enum: [dine_in, take_away]
+                  description: Метод получения
+      responses:
+        '201':
+          description: Заказ успешно создан
+        '400':
+          description: Некорректные данные
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /orders/{orderId}:
+    get:
+      tags:
+        - Orders
+      summary: Получить детали заказа
+      operationId: getOrderDetails
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор заказа
+      responses:
+        '200':
+          description: Детали заказа успешно получены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                    format: uuid
+                    description: Уникальный идентификатор заказа
+                  status:
+                    type: string
+                    description: Статус заказа
+                  totalPrice:
+                    type: number
+                    format: float
+                    description: Общая сумма заказа
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        dishId:
+                          type: string
+                          format: uuid
+                          description: Уникальный идентификатор блюда
+                        name:
+                          type: string
+                          description: Название блюда
+                        quantity:
+                          type: integer
+                          description: Количество порций
+                        price:
+                          type: number
+                          format: float
+                          description: Цена блюда
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
   /orders/{orderId}/pay:
     post:
-      summary: Оплатить заказ (возможна частичная оплата бонусами)
+      tags:
+        - Orders
+      summary: Оплатить заказ
       operationId: payForOrder
       parameters:
         - name: orderId
@@ -145,26 +237,9 @@ paths:
                   type: string
                   enum: [card, cash]
                   description: Способ оплаты
-                bonusPoints:
-                  type: number
-                  format: float
-                  description: Количество бонусов, используемых для частичной оплаты (опционально)
       responses:
         '200':
-          description: Заказ успешно оплачен (с учётом бонусов)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  totalPaid:
-                    type: number
-                    format: float
-                    description: Общая сумма, оплаченная (включая бонусы)
-                  bonusUsed:
-                    type: number
-                    format: float
-                    description: Количество использованных бонусов
+          description: Заказ успешно оплачен
         '400':
           description: Некорректные данные оплаты
         '404':
@@ -172,8 +247,32 @@ paths:
         '500':
           description: Внутренняя ошибка сервера
 
+  /orders/{orderId}/cancel:
+    post:
+      tags:
+        - Orders
+      summary: Отмена заказа
+      operationId: cancelOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор заказа
+      responses:
+        '200':
+          description: Заказ успешно отменен
+        '404':
+          description: Заказ не найден или уже выполнен
+        '500':
+          description: Внутренняя ошибка сервера
+
   /loyalty/register:
     post:
+      tags:
+        - Loyalty
       summary: Регистрация в программе лояльности
       operationId: registerLoyalty
       requestBody:
@@ -186,13 +285,13 @@ paths:
                 name:
                   type: string
                   description: Имя пользователя
-                phoneNumber:
-                  type: string
-                  description: Номер телефона пользователя
                 email:
                   type: string
                   format: email
                   description: Электронная почта пользователя
+                phone:
+                  type: string
+                  description: Телефон пользователя
       responses:
         '201':
           description: Успешная регистрация в программе лояльности
@@ -203,6 +302,8 @@ paths:
 
   /loyalty/{clientId}/balance:
     get:
+      tags:
+        - Loyalty
       summary: Проверить баланс программы лояльности
       operationId: getLoyaltyBalance
       parameters:
@@ -230,22 +331,34 @@ paths:
         '500':
           description: Внутренняя ошибка сервера
 
-  /orders/{orderId}/cancel:
-    post:
-      summary: Отмена заказа
-      operationId: cancelOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Уникальный идентификатор заказа
+  /robots:
+    get:
+      tags:
+        - Robots
+      summary: Получить информацию о роботах
+      operationId: getRobots
       responses:
         '200':
-          description: Заказ успешно отменен
-        '404':
-          description: Заказ не найден или уже выполнен
+          description: Информация о роботах успешно получена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    robotId:
+                      type: string
+                      format: uuid
+                      description: Уникальный идентификатор робота
+                    status:
+                      type: string
+                      description: Статус робота
+                    location:
+                      type: string
+                      description: Местоположение робота
+                    technicalCondition:
+                      type: string
+                      description: Техническое состояние робота
         '500':
-          description: Внутренняя ошибка сервера
+          description: Внутренняя ошибка

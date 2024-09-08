@@ -28,6 +28,7 @@ package Система {
     usecase "Внести информацию\nпо ценам" as cena
     usecase "Внести информацию\nпо тех. картам" as poc
     usecase "Просмотреть информацию\nо состоянии роботов" as robot
+    usecase "Мониторинг запасов" as stock_check
 
 }
 
@@ -57,5 +58,5 @@ addmenu ..> cena : include
 addmenu ..> poc : include
 
 mbuy -- robot
-
+mbuy -- stock_check
 @enduml
