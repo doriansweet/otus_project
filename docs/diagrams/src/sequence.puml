@@ -6,6 +6,7 @@ participant "Api Gateway" as gw
 participant "Order Service" as os
 participant "Clients Service" as cs
 participant "Menu Service" as ms
+participant "Inventory Service" as is
 participant "Bank Service" as bs
 participant "Order tableau" as ot
 queue "Kafka" as kf
@@ -54,6 +55,23 @@ deactivate os
 deactivate kf
 
 oi -> c : Показать итоговый заказ
+c -> oi : Подтвердить заказ
+
+' Новый шаг: Проверка и блокировка ингредиентов
+oi -> is : Проверка наличия ингредиентов
+activate is
+is -> oi : Ингредиенты в наличии
+opt Ингредиентов недостаточно
+    is -> oi : Уведомление о нехватке ингредиентов
+    c -> oi : Скорректировать заказ
+is -> is : Блокировка ингредиентов
+is -> ms++: Сделать блюда недоступными 
+is --
+ms --
+
+end 
+oi -> c : Показать итоговый заказ
+
 c -> oi : Оплатить заказ
 
 oi -> gw : Начать оплату заказа

@@ -86,9 +86,8 @@ nav:
   - Основная информация:
     - index.md
     - requirements.md
-    - user_story.md
-    - use_case.md
     - bpmn.md
+    - use_case.md
   - Техническая документация:
     - api.md
     - db.md

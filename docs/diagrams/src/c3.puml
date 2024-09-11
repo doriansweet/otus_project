@@ -9,73 +9,73 @@ skinparam wrapWidth 900
 Person(customer, "Клиент")
 Person(employee, "Сотрудник")
 
-System_Boundary(robot_restaurant, "Роботизированный ресторан") {
-    Container(client_app, "Client Application", "iOS/Android/JavaScript", "Мобильное и веб-приложение для клиентов")
-    Container(terminal, "Terminal", "JavaScript", "Терминал для клиентов")
-    Container(service_web, "Service Web", "JavaScript", "Веб-приложение для сотрудников")
-    Container(order_tableau, "Order Tableau", "JavaScript", "Компонент отображающий заказы")
+System_Boundary(robot_restaurant, "Роботизированный ресторан") { 
+Container(client_app, "Client Application", "iOS/Android/JavaScript", "Мобильное и веб-приложение для клиентов") 
+Container(terminal, "Terminal", "JavaScript", "Терминал для клиентов") 
+Container(service_web, "Service Web", "JavaScript", "Веб-приложение для сотрудников") 
+Container(order_tableau, "Order Tableau", "JavaScript", "Компонент отображающий заказы")
 
-    Container_Boundary(core_components, "Core Components") {
-        Component(client_api_gateway, "Client API Gateway", "Java", "Шлюз для клиентских приложений")
-        Component(internal_api_gateway, "Internal API Gateway", "Java", "Шлюз для внутренних систем")
-        Component(auth, "Auth Component", "Java", "Аутентификация и авторизация")
-        Component(orders, "Orders Component", "Java", "Обработка заказов")
-        Component(menu, "Menu Component", "Java", "Управление меню и технологическими картами")
-        Component(clients, "Clients Component", "Java", "Логика работы с клиентами")
-        Component(robots, "Robots Component", "Java", "Управление роботами и мониторинг")
-        Component(inventory, "Inventory Component", "Java", "Управление запасами и автозаказами")
-        Component(broker, "Broker", "Apache Kafka", "Очередь сообщений")
-        Component(cache, "Cache Layer", "Redis", "Кэш данных")
-    }
-
-    Container_Boundary(databases, "Databases") {
-        ContainerDb(db_orders, "Orders DB", "Postgres", "Хранение заказов")
-        ContainerDb(db_menu, "Menu DB", "Postgres", "Хранение меню и технологических карт")
-        ContainerDb(db_clients, "Clients DB", "Postgres", "Хранение клиентов")
-        ContainerDb(db_inventory, "Inventory DB", "Postgres", "Хранение данных о запасах")
-        ContainerDb(db_robots, "Robots DB", "Postgres", "Хранение данных о роботах")
-    }
+Container_Boundary(core_components, "Core Components") {
+    Component(client_api_gateway, "Client API Gateway", "Go/Kotlin", "Шлюз для клиентских приложений")
+    Component(internal_api_gateway, "Internal API Gateway", "Go/Kotlin", "Шлюз для внутренних систем")
+    Component(auth, "Auth Component", "Go/Kotlin", "Аутентификация и авторизация")
+    Component(orders, "Orders Component", "Go/Kotlin", "Обработка заказов")
+    Component(menu, "Menu Component", "Go/Kotlin", "Управление меню и технологическими картами")
+    Component(clients, "Clients Component", "Go/Kotlin", "Логика работы с клиентами")
+    Component(robots, "Robots Component", "Go/Kotlin", "Управление роботами и мониторинг")
+    Component(inventory, "Inventory Component", "Go/Kotlin", "Управление запасами и автозаказами")
+    Component(broker, "Broker", "Apache Kafka", "Очередь сообщений")
+    Component(cache, "Cache Layer", "Redis", "Кэш данных")
 }
 
-System_Ext(bank_system, "Банковский процессинг", "Внешняя система", "Процессинг оплаты")
-System_Ext(yandex_delivery, "Я.Доставка", "Внешняя система", "Система доставки")
-System_Ext(accounting, "1С", "Внешняя система", "Склад и бухгалтерия")
+Container_Boundary(databases, "Databases") {
+    ContainerDb(db_orders, "Orders DB", "Postgres", "Хранение заказов")
+    ContainerDb(db_menu, "Menu DB", "Postgres", "Хранение меню и технологических карт")
+    ContainerDb(db_clients, "Clients DB", "Postgres", "Хранение клиентов")
+    ContainerDb(db_inventory, "Inventory DB", "Postgres", "Хранение данных о запасах")
+    ContainerDb(db_robots, "Robots DB", "Postgres", "Хранение данных о роботах")
+}
+}
+
+System_Ext(bank_system, "Банковский процессинг", "Внешняя система", "Процессинг оплаты") 
+System_Ext(yandex_delivery, "Я.Доставка", "Внешняя система", "Система доставки") 
+System_Ext(accounting, "1С", "Внешняя система", "Склад и бухгалтерия") 
 System_Ext(robots_system, "Роботы", "Внешняя система", "Управление и мониторинг роботов")
 
-Rel(customer, client_app, "Использует для заказа", "Использует")
-Rel(customer, terminal, "Оформляет заказы", "Использует")
+Rel(customer, client_app, "Использует для заказа", "Использует") 
+Rel(customer, terminal, "Оформляет заказы", "Использует") 
 Rel(employee, service_web, "Использует для управления", "Использует")
 
-Rel(client_app, client_api_gateway, "Отправляет запросы", "REST")
-Rel(terminal, client_api_gateway, "Отправляет запросы", "REST")
+Rel(client_app, client_api_gateway, "Отправляет запросы", "REST") 
+Rel(terminal, client_api_gateway, "Отправляет запросы", "REST") 
 Rel(service_web, internal_api_gateway, "Отправляет запросы", "REST")
 
-Rel(client_api_gateway, auth, "Аутентификация пользователей", "REST")
-Rel(client_api_gateway, orders, "Управление заказами", "REST")
-Rel(client_api_gateway, menu, "Данные о меню и технологических картах", "REST")
+Rel(client_api_gateway, auth, "Аутентификация пользователей", "REST") 
+Rel(client_api_gateway, orders, "Управление заказами", "REST") 
+Rel(client_api_gateway, menu, "Данные о меню и технологических картах", "REST") 
 Rel(client_api_gateway, clients, "Данные о клиентах", "REST")
 
-Rel(internal_api_gateway, auth, "Аутентификация пользователей", "REST")
-Rel(internal_api_gateway, orders, "Управление заказами", "REST")
-Rel(internal_api_gateway, menu, "Данные о меню и технологических картах", "REST")
-Rel(internal_api_gateway, inventory, "Управление запасами", "REST")
+Rel(internal_api_gateway, auth, "Аутентификация пользователей", "REST") 
+Rel(internal_api_gateway, orders, "Управление заказами", "REST") 
+Rel(internal_api_gateway, menu, "Данные о меню и технологических картах", "REST") 
+Rel(internal_api_gateway, inventory, "Управление запасами", "REST") 
 Rel(internal_api_gateway, robots, "Управление роботами", "REST")
 
-Rel(auth, db_clients, "Работа с данными клиентов", "JDBC")
-Rel(clients, cache, "Чтение данных клиентов", "Кэширование")
-Rel(orders, db_orders, "Работа с данными заказов", "JDBC")
-Rel(menu, cache, "Чтение данных меню и технологических карт", "Кэширование")
-Rel(menu, db_menu, "Работа с данными меню и технологических карт", "JDBC")
-Rel(inventory, db_inventory, "Работа с данными запасов", "JDBC")
+Rel(auth, db_clients, "Работа с данными клиентов", "JDBC") 
+Rel(clients, cache, "Чтение данных клиентов", "Кэширование") 
+Rel(orders, db_orders, "Работа с данными заказов", "JDBC") 
+Rel(menu, cache, "Чтение данных меню и технологических карт", "Кэширование") 
+Rel(menu, db_menu, "Работа с данными меню и технологических карт", "JDBC") 
+Rel(inventory, db_inventory, "Работа с данными запасов", "JDBC") 
 Rel(robots, db_robots, "Хранение данных о роботах", "JDBC")
 
-Rel(orders, menu, "Информация о заказанных блюдах", "REST")
-Rel(orders, inventory, "Данные о запасах", "REST")
-Rel(inventory, broker, "Информация для автозаказа", "Kafka")
+Rel(orders, menu, "Информация о заказанных блюдах", "REST") 
+Rel(orders, inventory, "Данные о запасах", "REST") 
+Rel(inventory, broker, "Информация для автозаказа", "Kafka") 
 Rel(robots, broker, "Данные о состоянии роботов", "Kafka")
 
-Rel_U(bank_system, internal_api_gateway, "Платежная информация", "REST")
-Rel_U(yandex_delivery, internal_api_gateway, "Данные для доставки", "REST")
-Rel_U(accounting, internal_api_gateway, "Данные для бухгалтерии", "REST")
-Rel_U(robots_system, broker, "Информация о состоянии роботов", "Kafka")
+Rel_U(bank_system, internal_api_gateway, "Платежная информация", "REST") 
+Rel_U(yandex_delivery, internal_api_gateway, "Данные для доставки", "REST") 
+Rel_U(accounting, internal_api_gateway, "Данные для бухгалтерии", "REST") 
+Rel_U(robots_system, broker, "Информация о состоянии роботов", "Kafka") 
 @enduml

@@ -9,7 +9,6 @@ actor "Работник пополнения" as mbuy
 package Система {
 
     usecase "Оформить заказ" as offer
-    usecase "Получить заказ" as getoffer
     usecase "Ознакомиться с меню" as menu
     usecase "Собрать корзину" as basket
     usecase "Указать информацию\n“в зале” или “на вынос”" as place
@@ -29,22 +28,26 @@ package Система {
     usecase "Внести информацию\nпо тех. картам" as poc
     usecase "Просмотреть информацию\nо состоянии роботов" as robot
     usecase "Мониторинг запасов" as stock_check
+    usecase "Связаться с менеджером" as contact_manager
 
 }
 
 client -- offer
-client -- getoffer
+client -- canc_client : include
+client -- contact_manager
 
 offer ..> menu : include
-menu ..> basket : extend
+offer ..> basket : include
 offer ..> pay : include
 offer ..> place : include
 offer ..> ticket : include
 offer <.. loyal : extend
 
-pay <|.. pay_bonus : extend
-pay <|.. pay_cash : extend
-pay <|.. pay_card : extend
+pay ..> pay_cash : include
+pay ..> pay_card : include
+
+pay_cash <|.. pay_bonus : extend
+pay_card <|.. pay_bonus : extend
 
 mvariety -- addmenu
 
@@ -59,4 +62,5 @@ addmenu ..> poc : include
 
 mbuy -- robot
 mbuy -- stock_check
+
 @enduml
