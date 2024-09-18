@@ -88,6 +88,7 @@ nav:
     - requirements.md
     - bpmn.md
     - use_case.md
+    - design.md
   - Техническая документация:
     - api.md
     - db.md

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Restaurant API
-  version: 1.0.0
+  version: 1.0.1
   description: API для работы с заказами в ресторане, программой лояльности, технологическими картами и роботами
 
 tags:
@@ -17,8 +17,51 @@ tags:
     description: Операции с роботами
   - name: Recipes
     description: Операции с технологическими картами
+  - name: Stock
+    description: Операции со складскими запасами
+  - name: Payment
+    description: Операции с оплатой
+  - name: Auth
+    description: Авторизация пользователя
 
 paths:
+  /auth:
+    post:
+      tags:
+        - Auth
+      summary: Авторизация клиента
+      operationId: authorizeClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Логин клиента
+                password:
+                  type: string
+                  description: Пароль клиента
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clientId:
+                    type: string
+                    format: uuid
+                    description: Уникальный идентификатор клиента
+                  token:
+                    type: string
+                    description: Токен для дальнейшей аутентификации
+        '401':
+          description: Неверные логин или пароль
+
   /menu:
     get:
       tags:
@@ -58,6 +101,14 @@ paths:
         - Cart
       summary: Просмотреть корзину
       operationId: getCart
+      parameters:
+        - in: header
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор клиента
       responses:
         '200':
           description: Корзина успешно получена
@@ -99,6 +150,13 @@ paths:
       summary: Удалить блюдо из корзины
       operationId: removeDishFromCart
       parameters:
+        - in: header
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор клиента
         - name: dishId
           in: path
           required: true
@@ -113,6 +171,36 @@ paths:
           description: Блюдо не найдено в корзине
         '500':
           description: Внутренняя ошибка сервера
+    post:
+      tags:
+        - Cart
+      summary: Добавить товар в корзину
+      operationId: addToBasket
+      parameters:
+        - name: dishId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор товара
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  description: Количество добавляемого товара
+      responses:
+        '200':
+          description: Товар успешно добавлен в корзину
+        '404':
+          description: Товар не найден
+        '500':
+          description: Внутренняя ошибка сервера
 
   /orders:
     post:
@@ -120,6 +208,14 @@ paths:
         - Orders
       summary: Создать новый заказ
       operationId: createOrder
+      parameters:
+      - in: header
+        name: clientId
+        schema:
+          type: string
+          format: uuid
+        required: true
+        description: Уникальный идентификатор клиента
       requestBody:
         required: true
         content:
@@ -584,5 +680,70 @@ paths:
           description: Некорректные данные
         '404':
           description: Робот не найден
+        '500':
+          description: Внутренняя ошибка сервера
+  /stock:
+    get:
+      tags:
+        - Stock
+      summary: Получить информацию о складских запасах
+      operationId: getStock
+      responses:
+        '200':
+          description: Складские запасы успешно получены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ingredientId:
+                      type: string
+                      format: uuid
+                      description: Уникальный идентификатор ингредиента
+                    name:
+                      type: string
+                      description: Название ингредиента
+                    quantity:
+                      type: number
+                      description: Количество ингредиента на складе
+                    unit:
+                      type: string
+                      description: Единица измерения
+        '500':
+          description: Внутренняя ошибка сервера
+  /payment:
+    post:
+      tags:
+        - Payment
+      summary: Выполнить оплату
+      operationId: processPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: string
+                  format: uuid
+                  description: Уникальный идентификатор заказа
+                paymentMethod:
+                  type: string
+                  enum: [card, cash]
+                  description: Способ оплаты
+                bonusPoints:
+                  type: number
+                  description: Количество бонусных баллов, которые клиент хочет использовать для оплаты заказа
+                
+      responses:
+        '200':
+          description: Оплата успешно выполнена
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Заказ не найден
         '500':
           description: Внутренняя ошибка сервера
