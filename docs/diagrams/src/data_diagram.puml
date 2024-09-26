@@ -132,8 +132,7 @@ Dish ||--o{ Dish: "related dishes"
 Order ||--o{ Transaction: "involves"
 Client ||--o{ LoyaltyProgram: "enrolled in"
 Robot ||--o{ Task: "performs"
-Task ||--o{ Order: "related to"
+Order ||--o{ Task : "related to"
 Recipe ||--o{ Dish: "defines"
 Recipe ||--o{ Ingredient: "uses"
-
 @enduml
