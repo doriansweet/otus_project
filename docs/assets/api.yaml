@@ -62,9 +62,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MenuItem'
+        '204':
+          description: Часть меню успешно получена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItem'
         '500':
           description: Внутренняя ошибка сервера
-
   /cart:
     get:
       tags:
@@ -97,12 +104,12 @@ paths:
       operationId: removeDishFromCart
       parameters:
         - in: header
-          name: clientId
+          name: cartId
           schema:
             type: string
             format: uuid
           required: true
-          description: Уникальный идентификатор клиента
+          description: Уникальный идентификатор корзины
         - name: dishId
           in: path
           required: true
