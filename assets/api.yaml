@@ -1,0 +1,805 @@
+openapi: 3.0.0
+info:
+  title: Restaurant API
+  version: 1.0.1
+  description: API для работы с заказами в ресторане, программой лояльности, технологическими картами и роботами
+
+tags:
+  - name: Menu
+    description: Операции с меню ресторана
+  - name: Cart
+    description: Операции с корзиной
+  - name: Orders
+    description: Операции с заказами
+  - name: Loyalty
+    description: Операции с программой лояльности
+  - name: Robots
+    description: Операции с роботами
+  - name: Recipes
+    description: Операции с технологическими картами
+  - name: Stock
+    description: Операции со складскими запасами
+  - name: Payment
+    description: Операции с оплатой
+  - name: Auth
+    description: Авторизация пользователя
+
+paths:
+  /auth:
+    post:
+      tags:
+        - Auth
+      summary: Авторизация клиента
+      operationId: authorizeClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Неверные логин или пароль
+
+  /menu:
+    get:
+      tags:
+        - Menu
+      summary: Получить меню ресторана
+      operationId: getMenu
+      responses:
+        '200':
+          description: Меню успешно получено
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItem'
+        '204':
+          description: Часть меню успешно получена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItem'
+        '500':
+          description: Внутренняя ошибка сервера
+  /cart:
+    get:
+      tags:
+        - Cart
+      summary: Просмотреть корзину
+      operationId: getCart
+      parameters:
+        - in: header
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор клиента
+      responses:
+        '200':
+          description: Корзина успешно получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /cart/{dishId}:
+    delete:
+      tags:
+        - Cart
+      summary: Удалить блюдо из корзины
+      operationId: removeDishFromCart
+      parameters:
+        - in: header
+          name: cartId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор корзины
+        - name: dishId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор блюда
+      responses:
+        '200':
+          description: Блюдо успешно удалено из корзины
+        '404':
+          description: Блюдо не найдено в корзине
+        '500':
+          description: Внутренняя ошибка сервера
+
+    post:
+      tags:
+        - Cart
+      summary: Добавить товар в корзину
+      operationId: addToBasket
+      parameters:
+        - name: dishId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор товара
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  description: Количество добавляемого товара
+      responses:
+        '200':
+          description: Товар успешно добавлен в корзину
+        '404':
+          description: Товар не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Создать новый заказ
+      operationId: createOrder
+      parameters:
+        - in: header
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор клиента
+        - in: header
+          name: cartId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор корзины
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Заказ успешно создан
+        '400':
+          description: Некорректные данные
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /orders/{orderId}:
+    get:
+      tags:
+        - Orders
+      summary: Получить детали заказа
+      operationId: getOrderDetails
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор заказа
+      responses:
+        '200':
+          description: Детали заказа успешно получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailsResponse'
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Внутренняя ошибка сервера
+    delete:
+      tags:
+        - Orders
+      summary: Удалить заказ
+      operationId: deleteOrderOrderId
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор заказа
+      responses:
+        '200':
+          description: Успешно удален
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /orders/{orderId}/pay:
+    post:
+      tags:
+        - Orders
+      summary: Оплатить заказ
+      operationId: payForOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор заказа
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest1'
+      responses:
+        '200':
+          description: Заказ успешно оплачен
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /loyalty:
+    post:
+      tags:
+        - Loyalty
+      summary: Регистрация в программе лояльности
+      operationId: registerForLoyalty
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyRegistrationRequest'
+      responses:
+        '201':
+          description: Успешная регистрация
+        '400':
+          description: Некорректные данные
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /recipes:
+    get:
+      tags:
+        - Recipes
+      summary: Получить список технологических карт
+      operationId: getRecipes
+      responses:
+        '200':
+          description: Список технологических карт успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    recipeId:
+                      type: string
+                      format: uuid
+                      description: Уникальный идентификатор рецепта
+                    name:
+                      type: string
+                      description: Название рецепта
+                    ingredients:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          ingredientId:
+                            type: string
+                            format: uuid
+                            description: Уникальный идентификатор ингредиента
+                          name:
+                            type: string
+                            description: Название ингредиента
+                          quantity:
+                            type: number
+                            format: float
+                            description: Количество ингредиента
+        '500':
+          description: Внутренняя ошибка сервера
+  /loyalty/{clientId}/balance:
+    get:
+      tags:
+        - Loyalty
+      summary: Проверить баланс программы лояльности
+      operationId: getLoyaltyBalance
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор клиента
+      responses:
+        '200':
+          description: Баланс программы лояльности успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientBalanceResponse'
+        '404':
+          description: Клиент не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /robots:
+    get:
+      tags:
+        - Robots
+      summary: Получить информацию о роботах
+      operationId: getRobots
+      responses:
+        '200':
+          description: Информация о роботах успешно получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotResponse'
+        '500':
+          description: Внутренняя ошибка
+
+  /robots/status:
+    get:
+      summary: Получить статус роботов
+      description: Возвращает текущее состояние всех роботов на кухне, включая их доступность и состояние.
+      operationId: getRobotStatus
+      tags:
+        - Robots
+      responses:
+        '200':
+          description: Статус роботов успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /recipes/{recipeId}:
+    get:
+      summary: Получить подробную информацию о рецепте
+      description: Возвращает информацию о конкретной технологической карте, включая ингредиенты и шаги приготовления.
+      operationId: getRecipeDetails
+      tags:
+        - Recipes
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор рецепта
+      responses:
+        '200':
+          description: Информация о рецепте успешно получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: Рецепт не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /robots/assignTask:
+    post:
+      summary: Назначить задачу роботу
+      description: Назначает задачу конкретному роботу на кухне, например, приготовление блюда или помощь в логистике.
+      operationId: assignTaskToRobot
+      tags:
+        - Robots
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                robotId:
+                  type: string
+                  format: uuid
+                  description: Уникальный идентификатор робота
+                task:
+                  type: string
+                  enum: [prepare_ingredient, cook_dish, serve_dish, clean_station, restock_ingredient]
+                  description: Назначенная задача робота. Задачи serve_dish, clean_station, restock_ingredient выполняются людьми, но требуют взаимодействия с роботом.
+                taskId:
+                  type: string
+                  format: uuid
+                  description: Уникальный идентификатор задачи (если требуется отслеживание)
+                priority:
+                  type: string
+                  enum: [low, medium, high]
+                  description: Приоритет задачи
+                deadline:
+                  type: string
+                  format: date-time
+                  description: Дата и время, к которому задача должна быть выполнена
+                humanAssistanceRequired:
+                  type: boolean
+                  description: Указывает, требуется ли взаимодействие с человеком для выполнения задачи (например, serve_dish, clean_station, restock_ingredient)
+                assistanceDescription:
+                  type: string
+                  description: Описание действий, которые должен выполнить человек для взаимодействия с роботом (например, подача блюда, уборка станции или пополнение ингредиентов)
+      responses:
+        '200':
+          description: Задача успешно назначена роботу
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Робот не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /stock:
+    get:
+      tags:
+        - Stock
+      summary: Получить информацию о складских запасах
+      operationId: getStock
+      responses:
+        '200':
+          description: Складские запасы успешно получены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ingredientId:
+                      type: string
+                      format: uuid
+                      description: Уникальный идентификатор ингредиента
+                    name:
+                      type: string
+                      description: Название ингредиента
+                    quantity:
+                      type: number
+                      description: Количество ингредиента на складе
+                    unit:
+                      type: string
+                      description: Единица измерения
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /payment:
+    post:
+      tags:
+        - Payment
+      summary: Обработать платеж
+      operationId: processPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Платеж успешно обработан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: Некорректные данные платежа
+        '500':
+          description: Внутренняя ошибка сервера
+components:
+  schemas:
+    ClientBalanceResponse:
+      type: object
+      properties:
+        balance:
+          type: number
+          format: float
+          description: Баланс программы лояльности
+
+    RobotStatus:
+      type: object
+      properties:
+        robotId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор робота
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+          description: Текущее состояние робота
+        task:
+          type: string
+          description: Текущая задача робота, если есть
+        lastMaintenance:
+          type: string
+          format: date-time
+          description: Дата последнего технического обслуживания
+
+    RobotResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/RobotStatus'
+
+    Recipe:
+      type: object
+      properties:
+        recipeId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор рецепта
+        name:
+          type: string
+          description: Название рецепта
+        description:
+          type: string
+          description: Описание рецепта
+        preparationTime:
+          type: integer
+          description: Время приготовления в минутах
+        difficultyLevel:
+          type: string
+          enum: [easy, medium, hard]
+          description: Уровень сложности приготовления
+        calories:
+          type: number
+          description: Калорийность на порцию
+        equipment:
+          type: array
+          items:
+            type: string
+            description: Оборудование, необходимое для приготовления
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              stepNumber:
+                type: integer
+                description: Номер шага
+              instruction:
+                type: string
+                description: Инструкция для данного шага
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredientId:
+                type: string
+                format: uuid
+                description: Уникальный идентификатор ингредиента
+              name:
+                type: string
+                description: Название ингредиента
+              quantity:
+                type: number
+                description: Количество ингредиента
+
+    PaymentRequest:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+          description: Номер банковской карты
+          example: "4111111111111111"
+        expirationDate:
+          type: string
+          description: Срок действия карты (MM/YY)
+          example: "12/24"
+        cvv:
+          type: string
+          description: CVV код карты
+          example: "123"
+        amount:
+          type: number
+          format: float
+          description: Сумма платежа
+          example: 100.50
+        currency:
+          type: string
+          description: Валюта платежа
+          example: "USD"
+      required:
+        - cardNumber
+        - expirationDate
+        - cvv
+        - amount
+        - currency
+
+    PaymentResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: Идентификатор транзакции в системе платежного шлюза
+          example: "txn_1234567890"
+        status:
+          type: string
+          description: Статус платежа
+          enum:
+            - approved
+            - declined
+            - pending
+          example: "approved"
+        message:
+          type: string
+          description: Сообщение от платежного шлюза
+          example: "Платеж успешно обработан"
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Логин клиента
+        password:
+          type: string
+          description: Пароль клиента          
+    AuthResponse:
+      type: object
+      properties:
+        clientId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор клиента
+        token:
+          type: string
+          description: Токен для дальнейшей аутентификации
+
+    MenuItem:
+      type: object
+      properties:
+        dishId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор блюда
+        name:
+          type: string
+          description: Название блюда
+        price:
+          type: number
+          format: float
+          description: Цена блюда
+        isDiscounted:
+          type: boolean
+          description: Есть ли на блюдо скидка
+
+    CartResponse:
+      type: object
+      properties:
+        totalPrice:
+          type: number
+          format: float
+          description: Общая сумма заказа
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              dishId:
+                type: string
+                format: uuid
+                description: Уникальный идентификатор блюда
+              name:
+                type: string
+                description: Название блюда
+              quantity:
+                type: integer
+                description: Количество порций
+              price:
+                type: number
+                format: float
+                description: Цена блюда
+
+    OrderRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              dishId:
+                type: string
+                format: uuid
+                description: Уникальный идентификатор блюда
+              quantity:
+                type: integer
+                description: Количество порций
+        paymentMethod:
+          type: string
+          enum: [card, cash]
+          description: Способ оплаты
+        pickupMethod:
+          type: string
+          enum: [dine_in, take_away]
+          description: Метод получения
+
+    OrderDetailsResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор заказа
+        status:
+          type: string
+          description: Статус заказа
+        totalPrice:
+          type: number
+          format: float
+          description: Общая сумма заказа
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              dishId:
+                type: string
+                format: uuid
+                description: Уникальный идентификатор блюда
+              name:
+                type: string
+                description: Название блюда
+              quantity:
+                type: integer
+                description: Количество порций
+              price:
+                type: number
+                format: float
+                description: Цена блюда
+    PaymentRequest1:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          enum: [card, cash]
+          description: Способ оплаты
+        bonusAmount:
+          type: number
+          format: double
+    LoyaltyRegistrationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя пользователя
+        email:
+          type: string
+          format: email
+          description: Электронная почта пользователя
+        phone:
+          type: string
+          description: Телефон пользователя

@@ -1,0 +1,66 @@
+@startuml
+left to right direction
+skinparam DefaultTextAlignment center
+actor "Посетитель" as client
+actor "Менеджер по ассортименту" as mvariety
+actor "Менеджер по гостеприимству" as mguest
+actor "Работник пополнения" as mbuy
+
+package Система {
+
+    usecase "Оформить заказ" as offer
+    usecase "Ознакомиться с меню" as menu
+    usecase "Собрать корзину" as basket
+    usecase "Указать информацию\n“в зале” или “на вынос”" as place
+    usecase "Произвести оплату" as pay
+    usecase "Оплатить бонусами" as pay_bonus
+    usecase "Оплатить наличными" as pay_cash
+    usecase "Оплатить картой" as pay_card
+    usecase "Получить талон" as ticket
+    usecase "Зарегистрировать\nв системе лояльности" as loyal
+    usecase "Оформить отказ покупки" as canc
+    usecase "Оформить отказ по запросу клиента" as canc_client
+    usecase "Оформить отказ из-за отсутствия товара" as canc_no_stock
+    usecase "Оформить отказ по другой причине" as canc_other
+    usecase "Сформировать меню" as addmenu
+    usecase "Внести информацию\nпо акциям" as acs
+    usecase "Внести информацию\nпо ценам" as cena
+    usecase "Внести информацию\nпо тех. картам" as poc
+    usecase "Просмотреть информацию\nо состоянии роботов" as robot
+    usecase "Мониторинг запасов" as stock_check
+    usecase "Связаться с менеджером" as contact_manager
+
+}
+
+client -- offer
+client -- canc_client : include
+client -- contact_manager
+
+offer ..> menu : include
+offer ..> basket : include
+offer ..> pay : include
+offer ..> place : include
+offer ..> ticket : include
+offer <.. loyal : extend
+
+pay ..> pay_cash : include
+pay ..> pay_card : include
+
+pay_cash <|.. pay_bonus : extend
+pay_card <|.. pay_bonus : extend
+
+mvariety -- addmenu
+
+mguest -- canc
+canc <|.. canc_client : extend
+canc <|.. canc_no_stock : extend
+canc <|.. canc_other : extend
+
+addmenu ..> acs : include
+addmenu ..> cena : include
+addmenu ..> poc : include
+
+mbuy -- robot
+mbuy -- stock_check
+
+@enduml

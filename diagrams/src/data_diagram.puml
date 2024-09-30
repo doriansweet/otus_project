@@ -1,0 +1,138 @@
+@startuml
+entity Client {
+    *client_id: UUID <<PK>>
+    --
+    phone: String
+    loyalty_member: Boolean
+    session: String
+}
+
+entity LoyaltyProgram {
+    *loyalty_program_id: UUID <<PK>>
+    --
+    client_id: UUID <<FK>>
+    bonus_points: Integer
+    full_name: String
+    phone: String
+    email: String
+    birthday: Date
+    client_level: String
+    joined_at: Date
+}
+
+entity Menu {
+    *menu_id: UUID <<PK>>
+    --
+    name: String
+    valid_until: Date
+    type: String
+}
+
+entity Dish {
+    *dish_id: UUID <<PK>>
+    --
+    name: String
+    type: String
+    description: String
+    price: Decimal
+    photo: String
+    ad_text: String
+    menu_id: UUID <<FK>>
+}
+
+entity Ingredient {
+    *ingredient_id: UUID <<PK>>
+    --
+    name: String
+    bju: String
+    calories: Integer
+    photo: String
+    price: Decimal
+    available: Boolean
+    max_quantity: Integer
+    mandatory: Boolean
+}
+
+entity ComboBurger {
+    *combo_id: UUID <<PK>>
+    --
+    name: String
+    description: String
+    ingredient_limit: Integer
+    price_increase: Decimal
+}
+
+entity Cart {
+    *cart_id: UUID <<PK>>
+    --
+    client_id: UUID <<FK>>
+    total_price: Decimal
+}
+
+entity Order {
+    *order_id: UUID <<PK>>
+    --
+    client_id: UUID <<FK>>
+    cart_id: UUID <<FK>>
+    status: String
+    order_date: DateTime
+    total_price: Decimal
+    delivery_method: String
+    delivery_time: DateTime
+    payment_method: String
+}
+
+entity Transaction {
+    *transaction_id: UUID <<PK>>
+    --
+    order_id: UUID <<FK>>
+    bank: String
+    status: String
+    transaction_date: DateTime
+    amount: Decimal
+    receipt: String
+}
+
+entity Robot {
+    *robot_id: UUID <<PK>>
+    --
+    status: String
+    location: String
+    technical_state: String
+}
+
+entity Task {
+    *task_id: UUID <<PK>>
+    --
+    robot_id: UUID <<FK>>
+    description: String
+    status: String
+    start_time: DateTime
+    end_time: DateTime
+}
+
+entity Recipe {
+    *recipe_id: UUID <<PK>>
+    --
+    dish_id: UUID <<FK>>
+    name: String
+    description: String
+    steps: String
+    cooking_time: Integer
+}
+
+Client ||--o{ Cart: "has"
+Client ||--o{ Order: "places"
+Cart ||--o{ Order: "is related to"
+Dish ||--o{ Cart: "contains"
+ComboBurger ||--|> Dish: "is a"
+Dish ||--o{ Menu: "is part of"
+Ingredient ||--o{ ComboBurger: "used in"
+Dish ||--o{ Dish: "related dishes"
+Order ||--o{ Transaction: "involves"
+Client ||--o{ LoyaltyProgram: "enrolled in"
+Robot ||--o{ Task: "performs"
+Order ||--o{ Task : "related to"
+Recipe ||--o{ Dish: "defines"
+Recipe ||--o{ Ingredient: "uses"
+@enduml
