@@ -216,6 +216,26 @@ paths:
           description: Заказ не найден
         '500':
           description: Внутренняя ошибка сервера
+    delete:
+      tags:
+        - Orders
+      summary: Удалить заказ
+      operationId: deleteOrderOrderId
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор заказа
+      responses:
+        '200':
+          description: Успешно удален
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Внутренняя ошибка сервера
 
   /orders/{orderId}/pay:
     post:
